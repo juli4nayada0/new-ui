@@ -955,16 +955,29 @@ body.dark .section-title {
 .doc-item {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
+  gap: 18px;
+  padding: 16px;
   background: var(--white);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: var(--shadow);
 }
 
 .doc-card {
   display: flex;
   flex-direction: column;
+  padding: 20px;
+  background: radial-gradient(circle at top right, #cfe3d6 0%, #e6eee9 45%, #ffffff 100%);
+  border-radius: 14px;
+}
+
+/* Keep the text readable/dark even in dark mode since the card background stays light */
+body.dark .doc-card h3,
+body.dark .doc-card .doc-price {
+  color: #16352a;
+}
+
+body.dark .doc-card .doc-desc {
+  color: #66736d;
 }
 
 .doc-card h3 {
@@ -1011,14 +1024,13 @@ body.dark .doc-request-btn {
   color: #ffffff;
 }
 
-/* Meta info sits below the card, plain, no box/border */
+/* Meta info/checklist sits plain, directly on the outer white card, no box */
 .doc-card-meta {
   margin-top: 0;
-  padding: 16px 18px;
-  background: var(--page);
-  border-radius: 12px;
+  padding: 0 6px 6px;
+  background: transparent;
   box-shadow: none;
-  border: 1px solid var(--border);
+  border: 0;
 }
 
 .doc-card-meta p {
