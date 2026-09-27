@@ -988,3 +988,96 @@ body.dark .nav-item:hover .icon {
 body.dark .section-title {
   color: rgba(255, 255, 255, .45);
 }
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.doc-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.doc-card-main {
+  padding: 22px;
+}
+
+.doc-card-main h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.doc-price {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.doc-card-main p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.doc-request-btn {
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter .15s ease;
+}
+
+.doc-request-btn:hover {
+  filter: brightness(.9);
+}
+
+body.dark .doc-request-btn {
+  color: var(--page);
+}
+
+.doc-card-meta {
+  padding: 18px 22px 22px;
+  border-top: 1px solid var(--border);
+}
+
+.doc-card-meta p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.doc-card-meta .meta-label {
+  margin-top: 12px;
+}
+
+.doc-card-meta .meta-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.doc-card-meta .meta-check .material-symbol {
+  font-size: 16px;
+  color: var(--primary);
+}
+
+@media (max-width: 480px) {
+  .doc-card-main,
+  .doc-card-meta {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

@@ -4,6 +4,7 @@ const collapseBtn = document.getElementById("collapseBtn");
 const pageTitle = document.getElementById("pageTitle");
 const pageIcon = document.getElementById("pageIcon");
 const dashboard = document.querySelector(".dashboard");
+const catalog = document.querySelector(".catalog");
 const sidebarIcon = document.getElementById("sidebarIcon");
 const navItems = document.querySelectorAll(".nav-item");
 const profileMenu = document.getElementById("profileMenu");
@@ -68,7 +69,7 @@ navItems.forEach(item => {
     pageTitle.textContent = item.dataset.page;
     pageIcon.textContent = pageIcons[item.dataset.page];
     dashboard.hidden = item.dataset.page !== "Dashboard";
-
+    catalog.hidden = item.dataset.page !== "Document Catalog";
     if (window.innerWidth <= 800) {
       sidebar.classList.remove("open");
       sidebarBackdrop.classList.remove("show");
