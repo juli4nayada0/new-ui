@@ -949,7 +949,7 @@ body.dark .section-title {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 28px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .doc-item {
@@ -960,6 +960,7 @@ body.dark .section-title {
   background: var(--white);
   border-radius: 20px;
   box-shadow: var(--shadow);
+  height: 100%;
 }
 
 .doc-card {
