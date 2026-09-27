@@ -948,15 +948,20 @@ body.dark .section-title {
 .doc-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  align-items: stretch;
+  gap: 28px;
+  align-items: start;
+}
+
+.doc-item {
+  display: flex;
+  flex-direction: column;
 }
 
 .doc-card {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: linear-gradient(160deg, var(--white) 0%, var(--page) 100%);
+  background: var(--white);
   border-radius: 16px;
   box-shadow: var(--shadow);
 }
@@ -1005,10 +1010,13 @@ body.dark .doc-request-btn {
   color: #ffffff;
 }
 
+/* Meta info sits below the card, plain, no box/border */
 .doc-card-meta {
   margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  padding: 0 4px;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
 }
 
 .doc-card-meta p {
@@ -1017,14 +1025,20 @@ body.dark .doc-request-btn {
   color: var(--text);
 }
 
+.doc-card-meta p strong {
+  font-weight: 700;
+}
+
 .doc-card-meta .meta-label {
-  margin-top: 12px;
+  margin-top: 14px;
+  margin-bottom: 8px;
 }
 
 .doc-card-meta .meta-check {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 6px;
   color: var(--muted);
 }
 
