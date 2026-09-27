@@ -287,10 +287,17 @@ button, a {
   background: var(--hover);
 }
 
-.search-toggle:focus-visible,
-.search input:focus-visible {
+.search-toggle:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+.search input:focus-visible {
+  outline: none;
+}
+
+.search.open {
+  border-color: var(--primary);
 }
 
 .search input {
