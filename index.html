@@ -63,9 +63,9 @@
         </div>
 
         <div class="top-actions">
-          <div class="search">
-            <span class="search-icon material-symbol">search</span>
-            <input id="searchInput" type="search" placeholder="">
+          <div class="search" id="searchControl">
+            <button class="search-toggle" id="searchToggle" type="button" aria-label="Open search" aria-expanded="false" aria-controls="searchInput"><span class="search-icon material-symbol">search</span></button>
+            <input id="searchInput" type="search" placeholder="Search" aria-label="Search portal" hidden>
           </div>
           <button class="top-icon" title="Notifications" aria-label="Notifications"><span class="material-symbol">notifications</span></button>
           <button class="top-icon" title="Theme" aria-label="Toggle theme" id="themeBtn"><span class="material-symbol" id="themeIcon">dark_mode</span></button>

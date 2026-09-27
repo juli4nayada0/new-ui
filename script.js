@@ -10,6 +10,8 @@ const profileMenu = document.getElementById("profileMenu");
 const profileDropdown = document.getElementById("profileDropdown");
 const themeBtn = document.getElementById("themeBtn");
 const themeIcon = document.getElementById("themeIcon");
+const searchControl = document.getElementById("searchControl");
+const searchToggle = document.getElementById("searchToggle");
 const searchInput = document.getElementById("searchInput");
 const dashboardDate = document.getElementById("dashboardDate");
 themeIcon.textContent = document.body.classList.contains("dark") ? "light_mode" : "dark_mode";
@@ -80,6 +82,34 @@ profileMenu.addEventListener("click", e => {
 
 document.addEventListener("click", () => {
   profileDropdown.classList.remove("show");
+});
+
+function setSearchOpen(isOpen) {
+  searchControl.classList.toggle("open", isOpen);
+  searchToggle.setAttribute("aria-expanded", String(isOpen));
+  searchToggle.setAttribute("aria-label", isOpen ? "Close search" : "Open search");
+  searchInput.hidden = !isOpen;
+
+  if (isOpen) {
+    searchInput.focus();
+  }
+}
+
+searchToggle.addEventListener("click", () => {
+  setSearchOpen(!searchControl.classList.contains("open"));
+});
+
+document.addEventListener("click", e => {
+  if (!searchControl.contains(e.target)) {
+    setSearchOpen(false);
+  }
+});
+
+searchInput.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    setSearchOpen(false);
+    searchToggle.focus();
+  }
 });
 
 themeBtn.addEventListener("click", e => {
