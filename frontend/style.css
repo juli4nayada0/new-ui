@@ -831,16 +831,17 @@ body.dark .profile-dropdown {
   gap: 14px;
   padding: 20px 22px;
   background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 14px;
   border-left: 4px solid var(--primary);
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 14px rgba(20, 55, 43, .12);
   transition: transform .2s ease, box-shadow .2s ease;
   cursor: default;
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 14px 34px rgba(20, 55, 43, .12);
+  box-shadow: 0 14px 34px rgba(20, 55, 43, .18);
 }
 
 .stat-card-icon {
