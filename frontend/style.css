@@ -940,18 +940,19 @@ body.dark .section-title {
 /* Document Catalog */
 .doc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
+  align-items: stretch;
 }
 
 .doc-card {
-  padding: 22px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: linear-gradient(160deg, var(--white) 0%, var(--page) 100%);
+  border-radius: 16px;
   box-shadow: var(--shadow);
 }
-
 .doc-card-top {
   display: flex;
   align-items: flex-start;
@@ -987,7 +988,8 @@ body.dark .section-title {
 }
 
 .doc-desc {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
+  min-height: 58px;
   font-size: 13px;
   line-height: 1.5;
   color: var(--muted);
