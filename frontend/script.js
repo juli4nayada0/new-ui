@@ -24,6 +24,7 @@ dashboardDate.textContent = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   year: "numeric"
 }).format(new Date());
+
 const pageIcons = {
   Dashboard: "dashboard",
   "Document Catalog": "description",
@@ -70,7 +71,7 @@ navItems.forEach(item => {
     pageIcon.textContent = pageIcons[item.dataset.page];
     dashboard.hidden = item.dataset.page !== "Dashboard";
     catalog.hidden = item.dataset.page !== "Document Catalog";
-    
+
     if (window.innerWidth <= 800) {
       sidebar.classList.remove("open");
       sidebarBackdrop.classList.remove("show");
