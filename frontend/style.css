@@ -834,6 +834,13 @@ body.dark .profile-dropdown {
   border-radius: 14px;
   border-left: 4px solid var(--primary);
   box-shadow: var(--shadow);
+  transition: transform .2s ease, box-shadow .2s ease;
+  cursor: default;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(20, 55, 43, .12);
 }
 
 .stat-card-icon {
