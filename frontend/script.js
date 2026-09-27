@@ -14,6 +14,8 @@ const searchControl = document.getElementById("searchControl");
 const searchToggle = document.getElementById("searchToggle");
 const searchInput = document.getElementById("searchInput");
 const dashboardDate = document.getElementById("dashboardDate");
+const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
 themeIcon.textContent = document.body.classList.contains("dark") ? "light_mode" : "dark_mode";
 dashboardDate.textContent = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
@@ -45,11 +47,17 @@ window.addEventListener("resize", updateSidebarIcon);
 collapseBtn.addEventListener("click", () => {
   if (window.innerWidth <= 800) {
     sidebar.classList.toggle("open");
+    sidebarBackdrop.classList.toggle("show");
   } else {
     sidebar.classList.toggle("collapsed");
     main.classList.toggle("expanded");
   }
   updateSidebarIcon();
+});
+
+sidebarBackdrop.addEventListener("click", () => {
+  sidebar.classList.remove("open");
+  sidebarBackdrop.classList.remove("show");
 });
 
 navItems.forEach(item => {
@@ -63,6 +71,7 @@ navItems.forEach(item => {
 
     if (window.innerWidth <= 800) {
       sidebar.classList.remove("open");
+      sidebarBackdrop.classList.remove("show");
     }
   });
 });
