@@ -207,6 +207,8 @@ button, a {
   margin-left: 214px;
   padding: 10px 10px 10px 0;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   transition: margin-left .25s ease, width .25s ease;
 }
 
@@ -398,11 +400,10 @@ button, a {
 }
 
 .content {
-  height: calc(100vh - 158px);
+  flex: 1;
   margin: 0;
   background: var(--white);
   border-radius: 16px;
-  overflow: auto;
   padding: 28px;
   box-shadow: var(--shadow);
 }
@@ -747,11 +748,6 @@ body.dark .profile-dropdown {
     border-radius: 14px;
   }
 
-  .content {
-    height: auto;
-    min-height: calc(100vh - 64px);
-  }
-
   .dashboard-heading {
     margin-bottom: 24px;
   }
@@ -924,6 +920,7 @@ body.dark .profile-dropdown {
   font-size: 11px;
   color: var(--muted);
 }
+
 /* Custom scrollbar */
 * {
   scrollbar-width: thin;
