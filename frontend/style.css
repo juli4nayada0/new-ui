@@ -907,12 +907,10 @@ body.dark .profile-dropdown {
 }
 
 .site-footer {
-  margin: 10px 0 0;
-  padding: 14px 20px;
-  background: var(--white);
-  border-radius: 16px;
+  margin: 40px 0 0;
+  padding: 14px 20px 0;
+  border-top: 1px solid var(--border);
   text-align: center;
-  box-shadow: var(--shadow);
 }
 
 .site-footer p {
