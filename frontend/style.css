@@ -49,19 +49,22 @@ button, a {
 .app {
   min-height: 100vh;
   display: flex;
+  padding: 14px;
+  gap: 14px;
 }
 
 .sidebar {
   width: 214px;
   min-width: 214px;
-  height: 100vh;
+  height: calc(100vh - 28px);
   position: fixed;
-  left: 0;
-  top: 0;
+  left: 14px;
+  top: 14px;
   display: flex;
   flex-direction: column;
   background: var(--sidebar);
-  border-right: 1px solid rgba(6, 78, 59, .07);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
   transition: width .25s ease, min-width .25s ease;
   z-index: 20;
 }
@@ -203,18 +206,17 @@ button, a {
 }
 
 .main {
-  width: calc(100% - 214px);
-  margin-left: 214px;
-  padding: 10px 10px 10px 0;
-  min-height: 100vh;
+  width: calc(100% - 214px - 14px);
+  margin-left: calc(214px + 14px);
+  min-height: calc(100vh - 28px);
   display: flex;
   flex-direction: column;
+  gap: 10px;
   transition: margin-left .25s ease, width .25s ease;
 }
 
 .topbar {
   height: 64px;
-  margin: 0 0 10px 0;
   background: var(--white);
   border-radius: 16px;
   display: flex;
@@ -401,11 +403,11 @@ button, a {
 
 .content {
   flex: 1;
-  margin: 0;
   background: var(--white);
   border-radius: 16px;
   padding: 28px;
   box-shadow: var(--shadow);
+  overflow: auto;
 }
 
 .dashboard {
@@ -706,12 +708,21 @@ body.dark .profile-dropdown {
 }
 
 .main.expanded {
-  margin-left: 72px;
-  width: calc(100% - 72px);
+  margin-left: calc(72px + 14px);
+  width: calc(100% - 72px - 14px);
 }
 
 @media (max-width: 800px) {
+  .app {
+    padding: 0;
+    gap: 0;
+  }
+
   .sidebar {
+    left: 0;
+    top: 0;
+    height: 100vh;
+    border-radius: 0;
     transform: translateX(-100%);
     box-shadow: 8px 0 30px rgba(0,0,0,.08);
   }
@@ -724,6 +735,8 @@ body.dark .profile-dropdown {
   .main.expanded {
     width: 100%;
     margin-left: 0;
+    padding: 10px;
+    gap: 10px;
   }
 
   .topbar {
@@ -744,7 +757,6 @@ body.dark .profile-dropdown {
   }
 
   .content {
-    margin: 0;
     border-radius: 14px;
   }
 
