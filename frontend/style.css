@@ -955,15 +955,16 @@ body.dark .section-title {
 .doc-item {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
 }
 
 .doc-card {
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  background: var(--white);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
 }
 
 .doc-card h3 {
@@ -1012,11 +1013,12 @@ body.dark .doc-request-btn {
 
 /* Meta info sits below the card, plain, no box/border */
 .doc-card-meta {
-  margin-top: 16px;
-  padding: 0 4px;
-  background: transparent;
+  margin-top: 0;
+  padding: 16px 18px;
+  background: var(--page);
+  border-radius: 12px;
   box-shadow: none;
-  border: 0;
+  border: 1px solid var(--border);
 }
 
 .doc-card-meta p {
