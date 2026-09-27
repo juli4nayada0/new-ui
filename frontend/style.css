@@ -917,3 +917,14 @@ body.dark .profile-dropdown {
     display: block;
   }
 }
+.site-footer {
+  margin: 10px 8px 0;
+  padding: 14px 20px;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 2px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
