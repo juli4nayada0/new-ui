@@ -5,6 +5,7 @@ const pageTitle = document.getElementById("pageTitle");
 const pageIcon = document.getElementById("pageIcon");
 const dashboard = document.querySelector(".dashboard");
 const catalog = document.querySelector(".catalog");
+const requests = document.querySelector(".requests");
 const sidebarIcon = document.getElementById("sidebarIcon");
 const navItems = document.querySelectorAll(".nav-item");
 const profileMenu = document.getElementById("profileMenu");
@@ -71,6 +72,7 @@ navItems.forEach(item => {
     pageIcon.textContent = pageIcons[item.dataset.page];
     dashboard.hidden = item.dataset.page !== "Dashboard";
     catalog.hidden = item.dataset.page !== "Document Catalog";
+    requests.hidden = item.dataset.page !== "My Requests";
 
     if (window.innerWidth <= 800) {
       sidebar.classList.remove("open");
