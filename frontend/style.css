@@ -1215,3 +1215,50 @@ body.dark .requests-new-btn:active {
   color: var(--primary);
   box-shadow: inset 0 0 0 2px var(--primary);
 }
+
+/* Org chart additions */
+.org-info em {
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.4;
+  color: #b07d1a;
+}
+
+.org-note {
+  max-width: 320px;
+  padding: 14px 22px;
+  border: 2px dashed var(--primary);
+  border-radius: 12px;
+  background: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.org-note small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.org-legend {
+  margin-top: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.org-legend strong {
+  color: var(--text);
+}
