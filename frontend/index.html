@@ -8,36 +8,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
   <main class="login-view" id="loginView">
     <section class="login-panel" aria-labelledby="loginTitle">
-      <svg class="login-header-shape" viewBox="0 0 412 180" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 0H412V73H296C289 73 284 79 284 89A78 78 0 0 1 128 89C128 79 123 73 116 73H0Z" fill="#fff"></path>
-      </svg>
       <div class="login-seal">
-        <img src="images/colm_registrar_logo.png" alt="College of Mercy of Pulilan Foundation registrar seal">
+        <img src="assets/images/colm_registrar_logo.png" alt="College of Mercy of Pulilan Foundation registrar seal">
       </div>
       <form class="login-form" id="loginForm">
         <h1 id="loginTitle">Portal Sign In</h1>
+        <p class="login-subtitle">Office of the Registrar</p>
         <div class="login-label-row">
           <label for="loginUsername">Username</label>
-          <span class="required-mark" aria-hidden="true">*</span>
         </div>
         <input id="loginUsername" name="username" type="text" placeholder="Username" autocomplete="username" required>
         <div class="login-label-row password-label-row">
-          <label for="loginPassword">Password <span class="required-mark">*</span></label>
+          <label for="loginPassword">Password</label>
           <button class="forgot-password" id="forgotPassword" type="button">Forgot Password?</button>
         </div>
         <div class="login-password-field">
           <input id="loginPassword" name="password" type="password" placeholder="Password" autocomplete="current-password" required>
           <button class="password-visibility material-symbol" id="passwordVisibility" type="button" aria-label="Show password">visibility</button>
         </div>
+        <label class="remember-option" for="rememberMe">
+          <input id="rememberMe" name="rememberMe" type="checkbox">
+          <span>Remember me</span>
+        </label>
         <p class="login-notice" id="loginNotice" role="status" aria-live="polite"></p>
         <p class="login-error" id="loginError" role="alert" aria-live="polite"></p>
-        <button class="login-submit" type="submit">Sign In</button>
+        <button class="login-submit" type="submit">Login</button>
         <details class="seed-accounts">
           <summary id="seedAccountsTitle">Development Seed Accounts</summary>
           <ul>
@@ -60,11 +61,12 @@
 
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <img class="logo" src="images/colm_logo.png" alt="COLM logo">
+        <img class="logo" src="assets/images/colm_logo.png" alt="COLM logo">
         <div class="brand-text">
-          <strong>STUDENT PORTAL</strong>
+          <strong id="portalBrandTitle">STUDENT PORTAL</strong>
           <span>COLM REGISTRAR</span>
         </div>
+        <button class="collapse-btn" id="collapseBtn" type="button" aria-label="Toggle sidebar"><span class="material-symbol" id="sidebarIcon">left_panel_close</span></button>
       </div>
 
       <nav class="nav">
@@ -102,7 +104,7 @@
     <main class="main">
       <header class="topbar">
         <div class="page-title">
-          <button class="collapse-btn" id="collapseBtn" aria-label="Toggle sidebar"><span class="material-symbol" id="sidebarIcon">left_panel_close</span></button>
+          <button class="collapse-btn mobile-sidebar-toggle" id="mobileSidebarBtn" type="button" aria-label="Open sidebar"><span class="material-symbol" id="mobileSidebarIcon">left_panel_open</span></button>
           <span class="title-icon material-symbol" id="pageIcon">dashboard</span>
           <span id="pageTitle">Dashboard</span>
         </div>
@@ -697,6 +699,6 @@
     </main>
   </div>
 
-  <script src="script.js"></script>
+  <script src="js/script.js"></script>
 </body>
 </html>

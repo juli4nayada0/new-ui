@@ -1,9 +1,11 @@
 const sidebar = document.getElementById("sidebar");
 const main = document.querySelector(".main");
 const collapseBtn = document.getElementById("collapseBtn");
+const mobileSidebarBtn = document.getElementById("mobileSidebarBtn");
 const pageTitle = document.getElementById("pageTitle");
 const pageIcon = document.getElementById("pageIcon");
 const sidebarIcon = document.getElementById("sidebarIcon");
+const mobileSidebarIcon = document.getElementById("mobileSidebarIcon");
 const navItems = document.querySelectorAll(".nav-item");
 const profileMenu = document.getElementById("profileMenu");
 const profileDropdown = document.getElementById("profileDropdown");
@@ -21,6 +23,7 @@ const loginNotice = document.getElementById("loginNotice");
 const forgotPassword = document.getElementById("forgotPassword");
 const passwordVisibility = document.getElementById("passwordVisibility");
 const loginPassword = document.getElementById("loginPassword");
+const rememberMe = document.getElementById("rememberMe");
 const portalApp = document.getElementById("portalApp");
 const logoutBtn = document.getElementById("logoutBtn");
 
@@ -32,6 +35,7 @@ const seededAccounts = [
 ];
 
 function showPortal(account) {
+  document.getElementById("portalBrandTitle").textContent = `${account.role.toUpperCase()} PORTAL`;
   document.getElementById("studentName").textContent = account.name;
   document.getElementById("studentRole").textContent = account.role;
   document.getElementById("profileName").textContent = account.name;
@@ -42,11 +46,12 @@ function showPortal(account) {
   portalApp.hidden = false;
 }
 
-const savedUsername = sessionStorage.getItem("colmPortalUser");
+const savedUsername = localStorage.getItem("colmPortalUser") || sessionStorage.getItem("colmPortalUser");
 const savedAccount = seededAccounts.find(account => account.username === savedUsername);
 if (savedAccount) {
   showPortal(savedAccount);
 } else {
+  localStorage.removeItem("colmPortalUser");
   sessionStorage.removeItem("colmPortalUser");
 }
 
@@ -62,7 +67,13 @@ loginForm.addEventListener("submit", event => {
     return;
   }
 
-  sessionStorage.setItem("colmPortalUser", account.username);
+  if (rememberMe.checked) {
+    localStorage.setItem("colmPortalUser", account.username);
+    sessionStorage.removeItem("colmPortalUser");
+  } else {
+    localStorage.removeItem("colmPortalUser");
+    sessionStorage.setItem("colmPortalUser", account.username);
+  }
   loginNotice.textContent = "";
   loginError.textContent = "";
   showPortal(account);
@@ -81,6 +92,7 @@ passwordVisibility.addEventListener("click", () => {
 
 logoutBtn.addEventListener("click", event => {
   event.stopPropagation();
+  localStorage.removeItem("colmPortalUser");
   sessionStorage.removeItem("colmPortalUser");
   portalApp.hidden = true;
   loginView.hidden = false;
@@ -129,12 +141,13 @@ function updateSidebarIcon() {
     ? sidebar.classList.contains("open")
     : !sidebar.classList.contains("collapsed");
   sidebarIcon.textContent = isOpen ? "left_panel_close" : "left_panel_open";
+  mobileSidebarIcon.textContent = sidebar.classList.contains("open") ? "left_panel_close" : "left_panel_open";
 }
 
 updateSidebarIcon();
 window.addEventListener("resize", updateSidebarIcon);
 
-collapseBtn.addEventListener("click", () => {
+function toggleSidebar() {
   if (window.innerWidth <= 800) {
     sidebar.classList.toggle("open");
     sidebarBackdrop.classList.toggle("show");
@@ -143,11 +156,15 @@ collapseBtn.addEventListener("click", () => {
     main.classList.toggle("expanded");
   }
   updateSidebarIcon();
-});
+}
+
+collapseBtn.addEventListener("click", toggleSidebar);
+mobileSidebarBtn.addEventListener("click", toggleSidebar);
 
 sidebarBackdrop.addEventListener("click", () => {
   sidebar.classList.remove("open");
   sidebarBackdrop.classList.remove("show");
+  updateSidebarIcon();
 });
 
 navItems.forEach(item => {
@@ -162,6 +179,7 @@ navItems.forEach(item => {
     if (window.innerWidth <= 800) {
       sidebar.classList.remove("open");
       sidebarBackdrop.classList.remove("show");
+      updateSidebarIcon();
     }
   });
 });
