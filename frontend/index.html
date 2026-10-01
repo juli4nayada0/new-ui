@@ -12,7 +12,51 @@
 </head>
 <body>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-  <div class="app">
+  <main class="login-view" id="loginView">
+    <section class="login-panel" aria-labelledby="loginTitle">
+      <svg class="login-header-shape" viewBox="0 0 412 180" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 0H412V73H296C289 73 284 79 284 89A78 78 0 0 1 128 89C128 79 123 73 116 73H0Z" fill="#fff"></path>
+      </svg>
+      <div class="login-seal">
+        <img src="images/colm_registrar_logo.png" alt="College of Mercy of Pulilan Foundation registrar seal">
+      </div>
+      <form class="login-form" id="loginForm">
+        <h1 id="loginTitle">Portal Sign In</h1>
+        <div class="login-label-row">
+          <label for="loginUsername">Username</label>
+          <span class="required-mark" aria-hidden="true">*</span>
+        </div>
+        <input id="loginUsername" name="username" type="text" placeholder="Username" autocomplete="username" required>
+        <div class="login-label-row password-label-row">
+          <label for="loginPassword">Password <span class="required-mark">*</span></label>
+          <button class="forgot-password" id="forgotPassword" type="button">Forgot Password?</button>
+        </div>
+        <div class="login-password-field">
+          <input id="loginPassword" name="password" type="password" placeholder="Password" autocomplete="current-password" required>
+          <button class="password-visibility material-symbol" id="passwordVisibility" type="button" aria-label="Show password">visibility</button>
+        </div>
+        <p class="login-notice" id="loginNotice" role="status" aria-live="polite"></p>
+        <p class="login-error" id="loginError" role="alert" aria-live="polite"></p>
+        <button class="login-submit" type="submit">Sign In</button>
+        <details class="seed-accounts">
+          <summary id="seedAccountsTitle">Development Seed Accounts</summary>
+          <ul>
+            <li><strong>Student:</strong> <code>2026-00001</code> / <code>Password123!</code></li>
+            <li><strong>Cashier:</strong> <code>cashier</code> / <code>Password123!</code></li>
+            <li><strong>Registrar:</strong> <code>registrar</code> / <code>Password123!</code></li>
+            <li><strong>Admin:</strong> <code>admin</code> / <code>Password123!</code></li>
+          </ul>
+        </details>
+      </form>
+    </section>
+    <footer class="login-footer">
+      <strong>College of Our Lady of Mercy of Pulilan Foundation, Inc.</strong>
+      <span>Registrar Document Request &amp; Tracking System</span>
+      <span>&copy; 2026 COLM. Authorized access only.</span>
+    </footer>
+  </main>
+
+  <div class="app" id="portalApp" hidden>
 
     <aside class="sidebar" id="sidebar">
       <div class="brand">
@@ -50,8 +94,8 @@
       </nav>
 
       <div class="student-card">
-        <strong>Juan Dela Cruz</strong>
-        <span>Student</span>
+        <strong id="studentName">Juan Dela Cruz</strong>
+        <span id="studentRole">Student</span>
       </div>
     </aside>
 
@@ -72,14 +116,14 @@
           <button class="top-icon" title="Theme" aria-label="Toggle theme" id="themeBtn"><span class="material-symbol" id="themeIcon">dark_mode</span></button>
           <div class="profile-menu" id="profileMenu">
             <div class="avatar material-symbol">person</div>
-            <span>2026-00001</span>
+            <span id="profileId">2026-00001</span>
             <span class="chevron material-symbol">expand_more</span>
             <div class="profile-dropdown" id="profileDropdown">
-              <div><strong>Juan Dela Cruz</strong></div>
-              <div>Student</div>
+              <div><strong id="profileName">Juan Dela Cruz</strong></div>
+              <div id="profileRole">Student</div>
               <hr>
               <button>Profile</button>
-              <button>Log out</button>
+              <button id="logoutBtn" type="button">Log out</button>
             </div>
           </div>
         </div>
@@ -90,7 +134,7 @@
           <header class="dashboard-heading">
             <div>
               <p class="dashboard-eyebrow">STUDENT PORTAL</p>
-              <h1>Welcome back, Juan</h1>
+              <h1>Welcome back, <span id="welcomeName">Juan</span></h1>
               <p>Keep track of your registrar requests and student services.</p>
             </div>
             <time class="dashboard-date" id="dashboardDate"></time>
