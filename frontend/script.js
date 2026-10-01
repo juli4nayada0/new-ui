@@ -3,9 +3,6 @@ const main = document.querySelector(".main");
 const collapseBtn = document.getElementById("collapseBtn");
 const pageTitle = document.getElementById("pageTitle");
 const pageIcon = document.getElementById("pageIcon");
-const dashboard = document.querySelector(".dashboard");
-const catalog = document.querySelector(".catalog");
-const requests = document.querySelector(".requests");
 const sidebarIcon = document.getElementById("sidebarIcon");
 const navItems = document.querySelectorAll(".nav-item");
 const profileMenu = document.getElementById("profileMenu");
@@ -17,6 +14,19 @@ const searchToggle = document.getElementById("searchToggle");
 const searchInput = document.getElementById("searchInput");
 const dashboardDate = document.getElementById("dashboardDate");
 const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
+const pageSections = {
+  "Dashboard": document.querySelector(".dashboard"),
+  "Document Catalog": document.querySelector(".catalog"),
+  "My Requests": document.querySelector(".requests"),
+  "Organizational Chart": document.querySelector(".org-chart")
+};
+
+function showPage(name) {
+  Object.entries(pageSections).forEach(([pageName, el]) => {
+    if (el) el.hidden = pageName !== name;
+  });
+}
 
 themeIcon.textContent = document.body.classList.contains("dark") ? "light_mode" : "dark_mode";
 dashboardDate.textContent = new Intl.DateTimeFormat("en-US", {
@@ -70,9 +80,7 @@ navItems.forEach(item => {
     item.classList.add("active");
     pageTitle.textContent = item.dataset.page;
     pageIcon.textContent = pageIcons[item.dataset.page];
-    dashboard.hidden = item.dataset.page !== "Dashboard";
-    catalog.hidden = item.dataset.page !== "Document Catalog";
-    requests.hidden = item.dataset.page !== "My Requests";
+    showPage(item.dataset.page);
 
     if (window.innerWidth <= 800) {
       sidebar.classList.remove("open");
