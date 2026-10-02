@@ -171,6 +171,30 @@ function hasExcessCopies() {
     .some(input => Number(input.value) > maxCopiesPerDocument);
 }
 
+function duplicateDocumentSelect() {
+  const selectedIds = new Set();
+  for (const select of requestDocumentRows.querySelectorAll(".request-document-select")) {
+    if (!select.value) continue;
+    if (selectedIds.has(select.value)) return select;
+    selectedIds.add(select.value);
+  }
+  return null;
+}
+
+function syncDocumentOptions() {
+  const selectedIds = new Set([...requestDocumentRows.querySelectorAll(".request-document-select")]
+    .map(select => select.value)
+    .filter(Boolean));
+
+  requestDocumentRows.querySelectorAll(".request-document-select").forEach(select => {
+    [...select.options].forEach(option => {
+      option.disabled = Boolean(option.value)
+        && option.value !== select.value
+        && selectedIds.has(option.value);
+    });
+  });
+}
+
 function requestTotal(items = selectedDocuments()) {
   return items.reduce((sum, item) => sum + item.lineTotal, 0);
 }
@@ -235,6 +259,7 @@ function dateReleaseLabel(items = selectedDocuments()) {
 }
 
 function updateRequestSummary() {
+  syncDocumentOptions();
   const items = selectedDocuments();
   requestDocumentRows.querySelectorAll(".request-document-row").forEach(row => {
     const item = catalogDocuments.find(document => document.id === row.querySelector(".request-document-select").value);
@@ -552,6 +577,13 @@ requestsBody.addEventListener("change", event => {
 });
 
 function moveToStep(nextStep) {
+  const duplicateSelect = duplicateDocumentSelect();
+  if (duplicateSelect) {
+    showRequestStep(1);
+    showRequestNotification("Each document can only be selected once. Choose a different document for each row.");
+    duplicateSelect.focus();
+    return;
+  }
   if (hasExcessCopies()) {
     showRequestStep(1);
     showRequestNotification(`You can request a maximum of ${maxCopiesPerDocument} copies per document.`);
@@ -722,6 +754,13 @@ document.querySelectorAll(".doc-request-btn").forEach(button => {
 documentRequestForm.addEventListener("submit", event => {
   event.preventDefault();
   if (activeStep !== 4) return;
+  const duplicateSelect = duplicateDocumentSelect();
+  if (duplicateSelect) {
+    showRequestStep(1);
+    showRequestNotification("Each document can only be selected once. Choose a different document for each row.");
+    duplicateSelect.focus();
+    return;
+  }
   if (!requirementsAreConfirmed() || !requiredFilesAreUploaded()) {
     showRequestStep(3);
     showRequestNotification(!requirementsAreConfirmed()
