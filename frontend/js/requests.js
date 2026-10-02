@@ -15,6 +15,7 @@ const requestSteps = [...document.querySelectorAll("[data-request-step]")];
 const requestStepIndicators = [...document.querySelectorAll("[data-step-indicator]")];
 const requestSuccess = document.getElementById("requestSuccess");
 const maxCopiesPerDocument = 5;
+const trackingQrValidityMs = 7 * 24 * 60 * 60 * 1000;
 const softCopyDocuments = new Set(["certification of grades", "certificate of registration"]);
 const requirementFiles = new Map();
 const confirmedRequirementRows = new Set();
@@ -85,6 +86,7 @@ const catalogDocuments = [...document.querySelectorAll(".doc-item")].map((item, 
 let activeStep = 1;
 let latestSubmission = null;
 let requestNotificationTimeout;
+let trackingQrExpiryTimeout;
 
 function currentAccountKey() {
   return localStorage.getItem("colmPortalUser")
@@ -384,10 +386,7 @@ function requiredFilesAreUploaded() {
 
 function updateReviewRequestButton() {
   const reviewButton = document.getElementById("reviewRequestBtn");
-  if (reviewButton) {
-    reviewButton.disabled = !requiredFilesAreUploaded()
-      || requestRequirementsList.querySelector("[data-validating]") !== null;
-  }
+  if (reviewButton) reviewButton.disabled = false;
 }
 
 async function requirementFileValidationError(file) {
@@ -445,7 +444,17 @@ function trackingNumber() {
 function renderTrackingQrCode(request) {
   const qrContainer = document.getElementById("requestTrackingQrCode");
   const qrStatus = document.getElementById("requestQrStatus");
+  const downloadButton = document.getElementById("downloadTrackingQr");
+  const expiresAt = new Date(new Date(request.submittedAt).getTime() + trackingQrValidityMs);
+  window.clearTimeout(trackingQrExpiryTimeout);
   qrContainer.replaceChildren();
+  downloadButton.disabled = true;
+  downloadButton.dataset.expiresAt = expiresAt.toISOString();
+
+  if (Date.now() >= expiresAt.getTime()) {
+    qrStatus.textContent = `This QR expired on ${formatDate(expiresAt)}.`;
+    return;
+  }
 
   if (typeof window.QRCode !== "function") {
     qrStatus.textContent = "QR generation is unavailable. Keep your tracking number above.";
@@ -454,6 +463,7 @@ function renderTrackingQrCode(request) {
 
   const payload = [
     `Tracking Number: ${request.tracking}`,
+    `QR Valid Until: ${expiresAt.toISOString()}`,
     "Documents: Name | Date Release | PHP per copy | Copies",
     ...request.items.map(item => `${item.name} | ${item.dateRelease.replace(/[–—]/g, "-")} | ${item.price} | ${item.quantity}`)
   ].join("\n");
@@ -467,7 +477,12 @@ function renderTrackingQrCode(request) {
       colorLight: "#ffffff",
       correctLevel: window.QRCode.CorrectLevel.M
     });
-    qrStatus.textContent = "Scan to read the tracking and document details. No account login is needed.";
+    downloadButton.disabled = false;
+    qrStatus.textContent = `Valid until ${formatDate(expiresAt)}. Scan to read the request details.`;
+    trackingQrExpiryTimeout = window.setTimeout(() => {
+      downloadButton.disabled = true;
+      qrStatus.textContent = `This QR expired on ${formatDate(expiresAt)}.`;
+    }, expiresAt.getTime() - Date.now());
   } catch {
     qrContainer.textContent = "QR unavailable";
     qrStatus.textContent = "QR generation failed. Keep your tracking number above.";
@@ -635,15 +650,15 @@ function moveToStep(nextStep) {
     requestPurposeInput.removeAttribute("aria-invalid");
     requestPurposeInput.placeholder = defaultPurposePlaceholder;
   }
-  if (nextStep >= 4 && !requirementsAreConfirmed()) {
-    showRequestStep(3);
-    showRequestNotification("Confirm that you have reviewed the listed requirements for every selected document.");
-    return;
-  }
   if (nextStep >= 4 && !requiredFilesAreUploaded()) {
     showRequestStep(3);
     showRequestNotification("Attach a file for every listed requirement before continuing.");
     requestRequirementsList.querySelector(".request-required-file:not([data-file-selected])")?.focus();
+    return;
+  }
+  if (nextStep >= 4 && !requirementsAreConfirmed()) {
+    showRequestStep(3);
+    showRequestNotification("Confirm that you have reviewed the listed requirements for every selected document.");
     return;
   }
   if (nextStep === 4) fillReview(items);
@@ -670,6 +685,28 @@ document.getElementById("copyTrackingNumber").addEventListener("click", async ()
   } catch {
     document.getElementById("copyTrackingNumber").textContent = latestSubmission.tracking;
   }
+});
+
+document.getElementById("downloadTrackingQr").addEventListener("click", () => {
+  const downloadButton = document.getElementById("downloadTrackingQr");
+  const expiresAt = new Date(downloadButton.dataset.expiresAt);
+  const qrStatus = document.getElementById("requestQrStatus");
+  if (!latestSubmission || Date.now() >= expiresAt.getTime()) {
+    downloadButton.disabled = true;
+    qrStatus.textContent = `This QR expired on ${formatDate(expiresAt)}.`;
+    return;
+  }
+
+  const canvas = document.querySelector("#requestTrackingQrCode canvas");
+  if (!canvas) {
+    qrStatus.textContent = "QR image is not ready to download.";
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.download = `${latestSubmission.tracking}-QR.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
 });
 
 document.querySelectorAll("[data-next-step]").forEach(button => {
@@ -798,11 +835,15 @@ documentRequestForm.addEventListener("submit", event => {
     duplicateSelect.focus();
     return;
   }
-  if (!requirementsAreConfirmed() || !requiredFilesAreUploaded()) {
+  if (!requiredFilesAreUploaded()) {
     showRequestStep(3);
-    showRequestNotification(!requirementsAreConfirmed()
-      ? "Confirm that you have reviewed the listed requirements for every selected document."
-      : "Attach a file for every listed requirement before continuing.");
+    showRequestNotification("Attach a file for every listed requirement before continuing.");
+    requestRequirementsList.querySelector(".request-required-file:not([data-file-selected])")?.focus();
+    return;
+  }
+  if (!requirementsAreConfirmed()) {
+    showRequestStep(3);
+    showRequestNotification("Confirm that you have reviewed the listed requirements for every selected document.");
     return;
   }
   if (hasExcessCopies()) {

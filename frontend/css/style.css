@@ -1984,6 +1984,27 @@ body.dark .doc-request-btn {
   line-height: 1.45;
 }
 
+.request-qr-download-btn {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 0 12px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.request-qr-download-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
   .request-tracking-card {
     grid-template-columns: 1fr;
