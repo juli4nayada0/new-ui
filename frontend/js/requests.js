@@ -5,6 +5,8 @@ const requestDocumentRows = document.getElementById("requestDocumentRows");
 const requestRequirementsList = document.getElementById("requestRequirementsList");
 const requestReleaseMethod = document.getElementById("requestReleaseMethod");
 const requestPaymentMethod = document.getElementById("requestPaymentMethod");
+const requestPurposeInput = document.getElementById("requestPurpose");
+const defaultPurposePlaceholder = requestPurposeInput.placeholder;
 const dateReleaseDisplay = document.getElementById("dateReleaseDisplay");
 const requestFormMessage = document.getElementById("requestFormMessage");
 const requestsBody = document.getElementById("requestsBody");
@@ -81,6 +83,7 @@ const catalogDocuments = [...document.querySelectorAll(".doc-item")].map((item, 
 
 let activeStep = 1;
 let latestSubmission = null;
+let requestNotificationTimeout;
 
 function currentAccountKey() {
   return localStorage.getItem("colmPortalUser")
@@ -285,10 +288,25 @@ function showRequestStep(step) {
     indicator.classList.toggle("active", number === step);
     indicator.classList.toggle("complete", number < step);
   });
+  clearRequestNotification();
+}
+
+function clearRequestNotification() {
+  window.clearTimeout(requestNotificationTimeout);
   requestFormMessage.setAttribute("role", "status");
   requestFormMessage.textContent = "";
 }
 
+function showRequestNotification(message) {
+  requestFormMessage.setAttribute("role", "alert");
+  requestFormMessage.textContent = message;
+  window.clearTimeout(requestNotificationTimeout);
+  requestNotificationTimeout = window.setTimeout(() => {
+    requestFormMessage.textContent = "";
+    requestFormMessage.setAttribute("role", "status");
+    requestNotificationTimeout = null;
+  }, 5000);
+}
 function startRequest(prefillDocument = "") {
   document.querySelector('.nav-item[data-page="My Requests"]')?.click();
   requestFormPanel.hidden = false;
@@ -296,6 +314,7 @@ function startRequest(prefillDocument = "") {
   requestSuccess.hidden = true;
   documentRequestForm.hidden = false;
   documentRequestForm.reset();
+  requestPurposeInput.placeholder = defaultPurposePlaceholder;
   requirementFiles.clear();
   confirmedRequirementRows.clear();
   requestDocumentRows.replaceChildren();
@@ -535,40 +554,40 @@ requestsBody.addEventListener("change", event => {
 function moveToStep(nextStep) {
   if (hasExcessCopies()) {
     showRequestStep(1);
-    requestFormMessage.textContent = `You can request a maximum of ${maxCopiesPerDocument} copies per document.`;
+    showRequestNotification(`You can request a maximum of ${maxCopiesPerDocument} copies per document.`);
     return;
   }
   const items = selectedDocuments();
   if (!items.length || items.length !== requestDocumentRows.children.length) {
     showRequestStep(1);
-    requestFormMessage.textContent = "Choose a document and valid number of copies for every row.";
+    showRequestNotification("Choose a document and valid number of copies for every row.");
     return;
   }
   if (nextStep >= 2 && !requestReleaseMethod.value) {
     showRequestStep(1);
-    requestFormMessage.textContent = "The selected documents do not share a release method. Submit them in separate requests.";
+    showRequestNotification("The selected documents do not share a release method. Submit them in separate requests.");
     return;
   }
   if (nextStep >= 3) {
-    const purposeInput = document.getElementById("requestPurpose");
-    if (!purposeInput.value.trim()) {
+    if (!requestPurposeInput.value.trim()) {
       showRequestStep(2);
-      requestFormMessage.setAttribute("role", "alert");
-      requestFormMessage.textContent = "Please enter a specific purpose before continuing.";
-      purposeInput.setAttribute("aria-invalid", "true");
-      purposeInput.focus();
+      requestPurposeInput.value = "";
+      requestPurposeInput.placeholder = "Please enter a specific purpose";
+      requestPurposeInput.setAttribute("aria-invalid", "true");
+      requestPurposeInput.focus();
       return;
     }
-    purposeInput.removeAttribute("aria-invalid");
+    requestPurposeInput.removeAttribute("aria-invalid");
+    requestPurposeInput.placeholder = defaultPurposePlaceholder;
   }
   if (nextStep >= 4 && !requirementsAreConfirmed()) {
     showRequestStep(3);
-    requestFormMessage.textContent = "Confirm that you have reviewed the listed requirements for every selected document.";
+    showRequestNotification("Confirm that you have reviewed the listed requirements for every selected document.");
     return;
   }
   if (nextStep >= 4 && !requiredFilesAreUploaded()) {
     showRequestStep(3);
-    requestFormMessage.textContent = "Attach a file for every listed requirement before continuing.";
+    showRequestNotification("Attach a file for every listed requirement before continuing.");
     requestRequirementsList.querySelector(".request-required-file:not([data-file-selected])")?.focus();
     return;
   }
@@ -580,13 +599,10 @@ document.getElementById("addDocumentRow").addEventListener("click", () => addDoc
 document.getElementById("startNewRequestBtn").addEventListener("click", () => startRequest());
 document.getElementById("cancelRequestForm").addEventListener("click", closeRequestForm);
 document.getElementById("viewMyRequests").addEventListener("click", closeRequestForm);
-document.getElementById("requestPurpose").addEventListener("input", event => {
+requestPurposeInput.addEventListener("input", event => {
   if (!event.target.value.trim()) return;
   event.target.removeAttribute("aria-invalid");
-  if (requestFormMessage.textContent === "Please enter a specific purpose before continuing.") {
-    requestFormMessage.setAttribute("role", "status");
-    requestFormMessage.textContent = "";
-  }
+  event.target.placeholder = defaultPurposePlaceholder;
 });
 document.querySelectorAll('.nav-item[data-page="My Requests"], [data-page-action="My Requests"]').forEach(link => {
   link.addEventListener("click", renderRequestHistory);
@@ -649,7 +665,7 @@ requestRequirementsList.addEventListener("change", async event => {
     fileInput.removeAttribute("data-validating");
     if (validationError) {
       fileInput.value = "";
-      requestFormMessage.textContent = validationError;
+      showRequestNotification(validationError);
       updateReviewRequestButton();
       return;
     }
@@ -657,7 +673,7 @@ requestRequirementsList.addEventListener("change", async event => {
     fileInput.toggleAttribute("data-file-selected", true);
     fileInput.nextElementSibling.classList.add("has-file");
     fileInput.nextElementSibling.querySelector(".request-required-file-name").textContent = file.name;
-    requestFormMessage.textContent = "";
+    clearRequestNotification();
     updateReviewRequestButton();
     return;
   }
@@ -708,14 +724,14 @@ documentRequestForm.addEventListener("submit", event => {
   if (activeStep !== 4) return;
   if (!requirementsAreConfirmed() || !requiredFilesAreUploaded()) {
     showRequestStep(3);
-    requestFormMessage.textContent = !requirementsAreConfirmed()
+    showRequestNotification(!requirementsAreConfirmed()
       ? "Confirm that you have reviewed the listed requirements for every selected document."
-      : "Attach a file for every listed requirement before continuing.";
+      : "Attach a file for every listed requirement before continuing.");
     return;
   }
   if (hasExcessCopies()) {
     showRequestStep(1);
-    requestFormMessage.textContent = `You can request a maximum of ${maxCopiesPerDocument} copies per document.`;
+    showRequestNotification(`You can request a maximum of ${maxCopiesPerDocument} copies per document.`);
     return;
   }
   const items = selectedDocuments();
