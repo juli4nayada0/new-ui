@@ -6,8 +6,7 @@ const requestRequirementsList = document.getElementById("requestRequirementsList
 const requestReleaseMethod = document.getElementById("requestReleaseMethod");
 const requestPaymentMethod = document.getElementById("requestPaymentMethod");
 const requestPurposeInput = document.getElementById("requestPurpose");
-const defaultPurposePlaceholder = "Please input purpose of request";
-const requestPurposeNextButton = document.querySelector('[data-request-step="2"] [data-next-step="3"]');
+const defaultPurposePlaceholder = "e.g. Scholarship application, employment, transfer";
 requestPurposeInput.placeholder = defaultPurposePlaceholder;
 const dateReleaseDisplay = document.getElementById("dateReleaseDisplay");
 const requestFormMessage = document.getElementById("requestFormMessage");
@@ -324,10 +323,6 @@ function clearRequestNotification() {
   requestFormMessage.textContent = "";
 }
 
-function updatePurposeNextButton() {
-  requestPurposeNextButton.disabled = !requestPurposeInput.value.trim();
-}
-
 function showRequestNotification(message) {
   requestFormMessage.setAttribute("role", "alert");
   requestFormMessage.textContent = message;
@@ -352,7 +347,6 @@ function startRequest(prefillDocument = "") {
   requestDocumentRows.replaceChildren();
   addDocumentRow(prefillDocument);
   requestPurposeInput.value = "";
-  updatePurposeNextButton();
   showRequestStep(1);
 }
 
@@ -640,7 +634,6 @@ document.getElementById("startNewRequestBtn").addEventListener("click", () => st
 document.getElementById("cancelRequestForm").addEventListener("click", closeRequestForm);
 document.getElementById("viewMyRequests").addEventListener("click", closeRequestForm);
 requestPurposeInput.addEventListener("input", event => {
-  updatePurposeNextButton();
   if (!event.target.value.trim()) return;
   event.target.removeAttribute("aria-invalid");
   event.target.placeholder = defaultPurposePlaceholder;
@@ -826,5 +819,4 @@ document.getElementById("requestAgainBtn")?.addEventListener("click", () => star
 
 renderRequestHistory();
 addDocumentRow();
-updatePurposeNextButton();
 showRequestStep(1);

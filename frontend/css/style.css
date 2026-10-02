@@ -2135,11 +2135,7 @@ body.dark .doc-request-btn {
   box-shadow: 0 0 0 3px rgba(169, 50, 38, .12);
 }
 
-#requestPurpose:placeholder-shown {
-  border-color: #a93226;
-}
-
-#requestPurpose:placeholder-shown::placeholder {
+#requestPurpose[aria-invalid="true"]::placeholder {
   color: #a93226;
   opacity: 1;
 }
