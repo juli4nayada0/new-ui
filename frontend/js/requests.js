@@ -172,6 +172,21 @@ function hasExcessCopies() {
     .some(input => Number(input.value) > maxCopiesPerDocument);
 }
 
+function purposeValidationError(value) {
+  const purpose = value.trim();
+  if (purpose.length < 3) return "Please enter a purpose with at least 3 characters.";
+
+  const letters = purpose.match(/[a-z]/gi) || [];
+  const vowels = purpose.match(/[aeiou]/gi) || [];
+  if (!letters.length || /(.)\1{4,}/i.test(purpose)) {
+    return "Please enter a meaningful purpose, not random characters.";
+  }
+  if (letters.length >= 8 && vowels.length / letters.length < 0.16) {
+    return "Please enter a meaningful purpose, not random characters.";
+  }
+  return "";
+}
+
 function duplicateDocumentSelect() {
   const selectedIds = new Set();
   for (const select of requestDocumentRows.querySelectorAll(".request-document-select")) {
@@ -603,12 +618,18 @@ function moveToStep(nextStep) {
     return;
   }
   if (nextStep >= 3) {
-    if (!requestPurposeInput.value.trim()) {
+    const purposeError = purposeValidationError(requestPurposeInput.value);
+    if (purposeError) {
       showRequestStep(2);
-      requestPurposeInput.value = "";
-      requestPurposeInput.placeholder = "Please enter a specific purpose";
       requestPurposeInput.setAttribute("aria-invalid", "true");
       requestPurposeInput.focus();
+      if (requestPurposeInput.value.trim()) {
+        requestPurposeInput.placeholder = defaultPurposePlaceholder;
+        showRequestNotification(purposeError);
+      } else {
+        requestPurposeInput.value = "";
+        requestPurposeInput.placeholder = "Please enter a specific purpose";
+      }
       return;
     }
     requestPurposeInput.removeAttribute("aria-invalid");
@@ -634,7 +655,7 @@ document.getElementById("startNewRequestBtn").addEventListener("click", () => st
 document.getElementById("cancelRequestForm").addEventListener("click", closeRequestForm);
 document.getElementById("viewMyRequests").addEventListener("click", closeRequestForm);
 requestPurposeInput.addEventListener("input", event => {
-  if (!event.target.value.trim()) return;
+  if (purposeValidationError(event.target.value)) return;
   event.target.removeAttribute("aria-invalid");
   event.target.placeholder = defaultPurposePlaceholder;
 });
@@ -756,6 +777,20 @@ document.querySelectorAll(".doc-request-btn").forEach(button => {
 documentRequestForm.addEventListener("submit", event => {
   event.preventDefault();
   if (activeStep !== 4) return;
+  const purposeError = purposeValidationError(requestPurposeInput.value);
+  if (purposeError) {
+    showRequestStep(2);
+    requestPurposeInput.setAttribute("aria-invalid", "true");
+    requestPurposeInput.focus();
+    if (requestPurposeInput.value.trim()) {
+      requestPurposeInput.placeholder = defaultPurposePlaceholder;
+      showRequestNotification(purposeError);
+    } else {
+      requestPurposeInput.value = "";
+      requestPurposeInput.placeholder = "Please enter a specific purpose";
+    }
+    return;
+  }
   const duplicateSelect = duplicateDocumentSelect();
   if (duplicateSelect) {
     showRequestStep(1);
