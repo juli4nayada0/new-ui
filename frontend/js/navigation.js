@@ -20,16 +20,26 @@ const content = document.getElementById("content");
 
 const pageSections = {
   "Dashboard": document.querySelector(".dashboard"),
+  "Overview & KPIs": document.querySelector(".dashboard"),
   "Document Catalog": document.querySelector(".catalog"),
   "My Requests": document.querySelector(".requests"),
-  "Organizational Chart": document.querySelector(".org-chart")
+  "All Requests": document.querySelector(".requests"),
+  "Organizational Chart": document.querySelector(".org-chart"),
+  "Org Chart": document.querySelector(".org-chart")
 };
+const registrarPlaceholder = document.querySelector(".registrar-placeholder");
+const registrarPlaceholderTitle = document.getElementById("registrarPlaceholderTitle");
+const registrarPlaceholderPages = new Set(["Students Directory", "CSV Bulk Import", "Official Reports", "Audit Logs"]);
 
 function showPage(name) {
-  content.classList.toggle("content-page-bg", name === "Document Catalog" || name === "My Requests");
-  Object.entries(pageSections).forEach(([pageName, el]) => {
-    if (el) el.hidden = pageName !== name;
-  });
+  content.classList.toggle("content-page-bg", ["Document Catalog", "My Requests", "All Requests"].includes(name));
+  new Set(Object.values(pageSections).filter(Boolean)).forEach(section => { section.hidden = true; });
+  if (pageSections[name]) pageSections[name].hidden = false;
+
+  if (registrarPlaceholder) {
+    registrarPlaceholder.hidden = !registrarPlaceholderPages.has(name);
+    if (!registrarPlaceholder.hidden) registrarPlaceholderTitle.textContent = name;
+  }
 }
 
 themeIcon.textContent = document.body.classList.contains("dark") ? "light_mode" : "dark_mode";
@@ -42,9 +52,16 @@ dashboardDate.textContent = new Intl.DateTimeFormat("en-US", {
 
 const pageIcons = {
   Dashboard: "dashboard",
+  "Overview & KPIs": "home",
   "Document Catalog": "description",
   "My Requests": "assignment_turned_in",
+  "All Requests": "assignment",
   "Organizational Chart": "account_tree",
+  "Org Chart": "account_tree",
+  "Students Directory": "groups",
+  "CSV Bulk Import": "upload",
+  "Official Reports": "analytics",
+  "Audit Logs": "verified_user",
   FAQs: "quiz",
   "Help Center": "support_agent",
   "Contact Registrar": "mail",

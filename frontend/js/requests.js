@@ -351,7 +351,7 @@ function showRequestNotification(message) {
   }, 5000);
 }
 function startRequest(prefillDocument = "") {
-  document.querySelector('.nav-item[data-page="My Requests"]')?.click();
+  document.querySelector('.nav-item[data-page="My Requests"], .nav-item[data-page="All Requests"]')?.click();
   requestFormPanel.hidden = false;
   requestsHistoryCard.hidden = true;
   requestSuccess.hidden = true;
@@ -674,7 +674,7 @@ requestPurposeInput.addEventListener("input", event => {
   event.target.removeAttribute("aria-invalid");
   event.target.placeholder = defaultPurposePlaceholder;
 });
-document.querySelectorAll('.nav-item[data-page="My Requests"], [data-page-action="My Requests"]').forEach(link => {
+document.querySelectorAll('.nav-item[data-page="My Requests"], .nav-item[data-page="All Requests"], [data-page-action="My Requests"]').forEach(link => {
   link.addEventListener("click", renderRequestHistory);
 });
 document.getElementById("copyTrackingNumber").addEventListener("click", async () => {
