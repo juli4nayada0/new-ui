@@ -553,10 +553,8 @@
 
       <section class="request-step" data-request-step="3" hidden>
         <h3>Step 3: Review Required Items</h3>
-        <p class="request-step-description">Requirements below are taken from the Document Catalog. Confirm that you have reviewed them.</p>
+        <p class="request-step-description">Attach a file for each requirement below, then confirm that you have reviewed them.</p>
         <div id="requestRequirementsList"></div>
-        <label class="request-form-label" for="requestAttachments">Supporting files (optional)</label>
-        <input class="request-file-input" id="requestAttachments" type="file" multiple accept=".pdf,.jpg,.jpeg,.png">
         <p class="request-date-note">Files are listed for this browser demo and are not uploaded to a server.</p>
         <div class="request-form-actions request-form-actions-split">
           <button class="request-back-btn" type="button" data-previous-step="2">← Back</button>
@@ -594,9 +592,13 @@
       <h3>Request Successfully Submitted!</h3>
       <p>Your request is pending payment. Once the Registrar releases a paid softcopy, you can download it from My Requests.</p>
       <div class="request-tracking-card">
-        <span>Your tracking number</span>
-        <strong id="requestTrackingNumber">—</strong>
-        <span>Total assessment: <b id="successTotal">₱0.00</b></span>
+        <div class="request-tracking-qr" id="requestTrackingQrCode" role="img" aria-label="QR code containing request tracking and document details"></div>
+        <div class="request-tracking-details">
+          <span>Your tracking number</span>
+          <strong id="requestTrackingNumber">—</strong>
+          <span>Total assessment: <b id="successTotal">₱0.00</b></span>
+          <p class="request-qr-note" id="requestQrStatus" role="status">Preparing QR code...</p>
+        </div>
       </div>
       <div class="request-success-actions">
         <button class="request-back-btn" id="copyTrackingNumber" type="button">Copy Tracking Number</button>
@@ -819,6 +821,7 @@
 
   <script src="js/auth.js"></script>
   <script src="js/navigation.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="js/requests.js"></script>
 </body>
 </html>

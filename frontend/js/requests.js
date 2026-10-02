@@ -11,6 +11,31 @@ const requestsBody = document.getElementById("requestsBody");
 const requestSteps = [...document.querySelectorAll("[data-request-step]")];
 const requestStepIndicators = [...document.querySelectorAll("[data-step-indicator]")];
 const requestSuccess = document.getElementById("requestSuccess");
+const maxCopiesPerDocument = 5;
+const softCopyDocuments = new Set(["certification of grades", "certificate of registration"]);
+const requirementFiles = new Map();
+const confirmedRequirementRows = new Set();
+const maxRequirementFileSizeBytes = 3 * 1024 * 1024;
+
+document.querySelectorAll(".doc-item").forEach(item => {
+  const name = item.querySelector(".doc-card h3").innerText.trim().toLowerCase();
+  if (softCopyDocuments.has(name)) return;
+
+  item.querySelectorAll(".doc-card-meta .meta-check").forEach(method => {
+    if (method.innerText.replace("check_circle", "").trim().toLowerCase() === "softcopy") {
+      method.remove();
+    }
+  });
+});
+
+const catalogItems = [...document.querySelectorAll(".doc-grid .doc-item")];
+const gradesDocument = catalogItems.find(item =>
+  item.querySelector(".doc-card h3").innerText.trim().toLowerCase() === "certification of grades"
+);
+const registrationDocument = catalogItems.find(item =>
+  item.querySelector(".doc-card h3").innerText.trim().toLowerCase() === "certificate of registration"
+);
+if (gradesDocument && registrationDocument) gradesDocument.after(registrationDocument);
 
 const catalogDocuments = [...document.querySelectorAll(".doc-item")].map((item, index) => {
   const metadata = [...item.querySelectorAll(".doc-card-meta p")]
@@ -40,14 +65,17 @@ const catalogDocuments = [...document.querySelectorAll(".doc-item")].map((item, 
     if (section === "methods" && line) releaseMethods.push(line);
   });
 
+  const name = item.querySelector(".doc-card h3").innerText.trim();
   const priceText = item.querySelector(".doc-price").innerText;
   return {
     id: `document-${index}`,
-    name: item.querySelector(".doc-card h3").innerText.trim(),
+    name,
     price: Number(priceText.replace(/[^\d.]/g, "")),
     processing: metadata.find(line => line.startsWith("Processing Days:"))?.replace("Processing Days:", "").trim() || "Same day",
     requirements,
-    releaseMethods: releaseMethods.map(method => method.toLowerCase().includes("hardcopy") ? "Hardcopy" : "Softcopy")
+    releaseMethods: releaseMethods
+      .map(method => method.toLowerCase().includes("hardcopy") ? "Hardcopy" : "Softcopy")
+      .filter(method => method !== "Softcopy" || softCopyDocuments.has(name.toLowerCase()))
   };
 });
 
@@ -125,10 +153,19 @@ function selectedDocuments() {
   return [...requestDocumentRows.querySelectorAll(".request-document-row")].flatMap(row => {
     const document = catalogDocuments.find(item => item.id === row.querySelector(".request-document-select").value);
     const quantity = Number(row.querySelector(".request-quantity").value);
-    return document && Number.isInteger(quantity) && quantity > 0
-      ? [{ ...document, quantity, lineTotal: document.price * quantity, dateRelease: dateReleaseForProcessing(document.processing) }]
+    return document && Number.isInteger(quantity) && quantity > 0 && quantity <= maxCopiesPerDocument
+      ? [{ ...document, requestRowId: row.dataset.requestRowId, quantity, lineTotal: document.price * quantity, dateRelease: dateReleaseForProcessing(document.processing) }]
       : [];
   });
+}
+
+function requirementFileKey(item, requirementIndex) {
+  return `${item.requestRowId}:${requirementIndex}`;
+}
+
+function hasExcessCopies() {
+  return [...requestDocumentRows.querySelectorAll(".request-quantity")]
+    .some(input => Number(input.value) > maxCopiesPerDocument);
 }
 
 function requestTotal(items = selectedDocuments()) {
@@ -139,6 +176,7 @@ function makeDocumentRow(documentId = "") {
   const row = document.createElement("div");
   const selectId = `request-document-${crypto.randomUUID()}`;
   row.className = "request-document-row";
+  row.dataset.requestRowId = crypto.randomUUID();
   row.innerHTML = `
     <div class="request-field request-document-field">
       <label for="${selectId}">Requested document</label>
@@ -149,7 +187,7 @@ function makeDocumentRow(documentId = "") {
     </div>
     <div class="request-field request-quantity-field">
       <label for="${selectId}-quantity">Number of copies</label>
-      <input class="request-quantity" id="${selectId}-quantity" type="number" min="1" max="100" step="1" value="1" required>
+      <input class="request-quantity" id="${selectId}-quantity" type="number" min="1" max="${maxCopiesPerDocument}" step="1" value="1" required>
     </div>
     <div class="request-row-meta">
       <div><span>Unit price</span><strong class="request-unit-price">—</strong></div>
@@ -176,7 +214,12 @@ function syncReleaseMethods(items = selectedDocuments()) {
     ? commonMethods.map(method => `<option value="${method}">${method}</option>`).join("")
     : '<option value="">Choose a document first</option>';
   requestReleaseMethod.disabled = commonMethods.length === 0;
-  if (commonMethods.includes(currentMethod)) requestReleaseMethod.value = currentMethod;
+  if (commonMethods.includes(currentMethod)) {
+    requestReleaseMethod.value = currentMethod;
+  } else {
+    requestReleaseMethod.value = commonMethods[0] || "";
+  }
+  requestReleaseMethod.parentElement.hidden = commonMethods.length === 1;
 }
 
 function dateReleaseLabel(items = selectedDocuments()) {
@@ -196,7 +239,7 @@ function updateRequestSummary() {
     row.querySelector(".request-unit-price").textContent = item ? formatMoney(item.price) : "—";
     row.querySelector(".request-row-release").textContent = item ? dateReleaseForProcessing(item.processing).label : "—";
     row.querySelector(".request-line-total").textContent = item && quantity > 0 ? formatMoney(item.price * quantity) : "—";
-    row.querySelector(".request-remove-btn").disabled = requestDocumentRows.children.length === 1;
+    row.querySelector(".request-remove-btn").disabled = false;
   });
   document.getElementById("requestTotal").textContent = formatMoney(requestTotal(items));
   syncReleaseMethods(items);
@@ -205,14 +248,33 @@ function updateRequestSummary() {
 }
 
 function renderRequirements(items) {
-  const groups = items.map((item, index) => `
+  const groups = items.map(item => `
     <section class="request-requirement-group">
       <h4>${item.name.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</h4>
-      <ul>${item.requirements.map(requirement => `<li>${requirement.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</li>`).join("")}</ul>
-      <label class="request-confirm-option"><input type="checkbox" class="request-requirement-confirm" data-document-index="${index}"> I have reviewed these requirements.</label>
+      <ul>${item.requirements.map((requirement, requirementIndex) => {
+        const key = requirementFileKey(item, requirementIndex);
+        const inputId = `requirement-file-${item.requestRowId}-${requirementIndex}`;
+        const file = requirementFiles.get(key);
+        return `<li class="request-requirement-item">
+          <div class="request-requirement-heading">
+            <strong>${escapeHtml(requirement)}</strong>
+            <span class="request-required-badge">Required</span>
+          </div>
+          <p class="request-requirement-description">Upload a file that satisfies this requirement.</p>
+          <input class="request-required-file" id="${inputId}" type="file" data-requirement-key="${escapeHtml(key)}" accept=".pdf,.jpg,.jpeg,.png" ${file ? 'data-file-selected=""' : ""} required aria-label="Upload ${escapeHtml(requirement)} for ${escapeHtml(item.name)}">
+          <label class="request-requirement-dropzone${file ? " has-file" : ""}" for="${inputId}" data-input-id="${inputId}">
+            <span class="material-symbol request-dropzone-icon" aria-hidden="true">cloud_upload</span>
+            <strong>Click or drag file here to upload</strong>
+            <span class="request-requirement-formats">Allowed formats: PDF, JPG, JPEG, PNG (Max 3 MB)</span>
+            <span class="request-required-file-name">${file ? escapeHtml(file.name) : "No file selected"}</span>
+          </label>
+        </li>`;
+      }).join("")}</ul>
+      <label class="request-confirm-option"><input type="checkbox" class="request-requirement-confirm" data-request-row-id="${escapeHtml(item.requestRowId)}" ${confirmedRequirementRows.has(item.requestRowId) ? "checked" : ""}> I have reviewed these requirements.</label>
     </section>
   `).join("");
   requestRequirementsList.innerHTML = groups || '<p class="request-date-note">Choose documents in Step 1 to see their requirements.</p>';
+  updateReviewRequestButton();
 }
 
 function showRequestStep(step) {
@@ -223,6 +285,7 @@ function showRequestStep(step) {
     indicator.classList.toggle("active", number === step);
     indicator.classList.toggle("complete", number < step);
   });
+  requestFormMessage.setAttribute("role", "status");
   requestFormMessage.textContent = "";
 }
 
@@ -233,10 +296,11 @@ function startRequest(prefillDocument = "") {
   requestSuccess.hidden = true;
   documentRequestForm.hidden = false;
   documentRequestForm.reset();
+  requirementFiles.clear();
+  confirmedRequirementRows.clear();
   requestDocumentRows.replaceChildren();
   addDocumentRow(prefillDocument);
   document.getElementById("requestPurpose").value = "";
-  document.getElementById("requestAttachments").value = "";
   showRequestStep(1);
 }
 
@@ -252,9 +316,46 @@ function requirementsAreConfirmed() {
   return confirmations.length > 0 && confirmations.every(checkbox => checkbox.checked);
 }
 
+function requiredFilesAreUploaded() {
+  return [...requestRequirementsList.querySelectorAll(".request-required-file")]
+    .every(input => requirementFiles.has(input.dataset.requirementKey));
+}
+
+function updateReviewRequestButton() {
+  const reviewButton = document.getElementById("reviewRequestBtn");
+  if (reviewButton) {
+    reviewButton.disabled = !requiredFilesAreUploaded()
+      || requestRequirementsList.querySelector("[data-validating]") !== null;
+  }
+}
+
+async function requirementFileValidationError(file) {
+  if (!file.size) return "The selected file is empty.";
+  if (file.size > maxRequirementFileSizeBytes) return "The selected file must be 3 MB or smaller.";
+
+  const extension = file.name.split(".").pop().toLowerCase();
+  const signatures = {
+    pdf: [0x25, 0x50, 0x44, 0x46, 0x2d],
+    jpg: [0xff, 0xd8, 0xff],
+    jpeg: [0xff, 0xd8, 0xff],
+    png: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+  };
+  const expectedSignature = signatures[extension];
+  if (!expectedSignature) return "Choose a PDF, JPG, JPEG, or PNG file.";
+
+  const bytes = new Uint8Array(await file.slice(0, expectedSignature.length).arrayBuffer());
+  return expectedSignature.every((byte, index) => bytes[index] === byte)
+    ? ""
+    : "The file content does not match its extension.";
+}
+
 function fillReview(items) {
   const purpose = document.getElementById("requestPurpose").value.trim();
-  const files = [...document.getElementById("requestAttachments").files].map(file => file.name);
+  const requiredFiles = items.flatMap(item => item.requirements.map((requirement, requirementIndex) => {
+    const file = requirementFiles.get(requirementFileKey(item, requirementIndex));
+    return file ? `${item.name} - ${requirement}: ${file.name}` : null;
+  }).filter(Boolean));
+  const files = requiredFiles;
   document.getElementById("reviewPurpose").textContent = purpose;
   document.getElementById("reviewReleaseMethod").textContent = requestReleaseMethod.value;
   document.getElementById("reviewPaymentMethod").textContent = requestPaymentMethod.value;
@@ -278,6 +379,38 @@ function trackingNumber() {
   const stamp = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`;
   const suffix = Math.floor(10000 + Math.random() * 90000);
   return `COLM-${stamp}-${suffix}`;
+}
+
+function renderTrackingQrCode(request) {
+  const qrContainer = document.getElementById("requestTrackingQrCode");
+  const qrStatus = document.getElementById("requestQrStatus");
+  qrContainer.replaceChildren();
+
+  if (typeof window.QRCode !== "function") {
+    qrStatus.textContent = "QR generation is unavailable. Keep your tracking number above.";
+    return;
+  }
+
+  const payload = [
+    `Tracking Number: ${request.tracking}`,
+    "Documents: Name | Date Release | PHP per copy | Copies",
+    ...request.items.map(item => `${item.name} | ${item.dateRelease.replace(/[–—]/g, "-")} | ${item.price} | ${item.quantity}`)
+  ].join("\n");
+
+  try {
+    new window.QRCode(qrContainer, {
+      text: payload,
+      width: 220,
+      height: 220,
+      colorDark: "#123c2d",
+      colorLight: "#ffffff",
+      correctLevel: window.QRCode.CorrectLevel.M
+    });
+    qrStatus.textContent = "Scan to read the tracking and document details. No account login is needed.";
+  } catch {
+    qrContainer.textContent = "QR unavailable";
+    qrStatus.textContent = "QR generation failed. Keep your tracking number above.";
+  }
 }
 
 function escapeHtml(value) {
@@ -400,6 +533,11 @@ requestsBody.addEventListener("change", event => {
 });
 
 function moveToStep(nextStep) {
+  if (hasExcessCopies()) {
+    showRequestStep(1);
+    requestFormMessage.textContent = `You can request a maximum of ${maxCopiesPerDocument} copies per document.`;
+    return;
+  }
   const items = selectedDocuments();
   if (!items.length || items.length !== requestDocumentRows.children.length) {
     showRequestStep(1);
@@ -411,15 +549,27 @@ function moveToStep(nextStep) {
     requestFormMessage.textContent = "The selected documents do not share a release method. Submit them in separate requests.";
     return;
   }
-  if (nextStep >= 3 && !document.getElementById("requestPurpose").value.trim()) {
-    showRequestStep(2);
-    requestFormMessage.textContent = "Enter the purpose of your request before continuing.";
-    document.getElementById("requestPurpose").focus();
-    return;
+  if (nextStep >= 3) {
+    const purposeInput = document.getElementById("requestPurpose");
+    if (!purposeInput.value.trim()) {
+      showRequestStep(2);
+      requestFormMessage.setAttribute("role", "alert");
+      requestFormMessage.textContent = "Please enter a specific purpose before continuing.";
+      purposeInput.setAttribute("aria-invalid", "true");
+      purposeInput.focus();
+      return;
+    }
+    purposeInput.removeAttribute("aria-invalid");
   }
   if (nextStep >= 4 && !requirementsAreConfirmed()) {
     showRequestStep(3);
     requestFormMessage.textContent = "Confirm that you have reviewed the listed requirements for every selected document.";
+    return;
+  }
+  if (nextStep >= 4 && !requiredFilesAreUploaded()) {
+    showRequestStep(3);
+    requestFormMessage.textContent = "Attach a file for every listed requirement before continuing.";
+    requestRequirementsList.querySelector(".request-required-file:not([data-file-selected])")?.focus();
     return;
   }
   if (nextStep === 4) fillReview(items);
@@ -430,6 +580,14 @@ document.getElementById("addDocumentRow").addEventListener("click", () => addDoc
 document.getElementById("startNewRequestBtn").addEventListener("click", () => startRequest());
 document.getElementById("cancelRequestForm").addEventListener("click", closeRequestForm);
 document.getElementById("viewMyRequests").addEventListener("click", closeRequestForm);
+document.getElementById("requestPurpose").addEventListener("input", event => {
+  if (!event.target.value.trim()) return;
+  event.target.removeAttribute("aria-invalid");
+  if (requestFormMessage.textContent === "Please enter a specific purpose before continuing.") {
+    requestFormMessage.setAttribute("role", "status");
+    requestFormMessage.textContent = "";
+  }
+});
 document.querySelectorAll('.nav-item[data-page="My Requests"], [data-page-action="My Requests"]').forEach(link => {
   link.addEventListener("click", renderRequestHistory);
 });
@@ -461,9 +619,80 @@ requestDocumentRows.addEventListener("input", event => {
 
 requestDocumentRows.addEventListener("click", event => {
   const removeButton = event.target.closest(".request-remove-btn");
-  if (!removeButton || requestDocumentRows.children.length === 1) return;
-  removeButton.closest(".request-document-row").remove();
+  if (!removeButton) return;
+  const row = removeButton.closest(".request-document-row");
+  if (requestDocumentRows.children.length === 1) {
+    row.querySelector(".request-document-select").value = "";
+    row.querySelector(".request-quantity").value = "1";
+  } else {
+    row.remove();
+  }
   updateRequestSummary();
+});
+
+requestRequirementsList.addEventListener("change", async event => {
+  const fileInput = event.target.closest(".request-required-file");
+  if (fileInput) {
+    const file = fileInput.files[0];
+    const key = fileInput.dataset.requirementKey;
+    if (!file) {
+      requirementFiles.delete(key);
+      fileInput.nextElementSibling.classList.remove("has-file");
+      fileInput.nextElementSibling.querySelector(".request-required-file-name").textContent = "No file selected";
+      updateReviewRequestButton();
+      return;
+    }
+    fileInput.toggleAttribute("data-validating", true);
+    updateReviewRequestButton();
+    const validationError = await requirementFileValidationError(file);
+    if (!fileInput.isConnected || fileInput.files[0] !== file) return;
+    fileInput.removeAttribute("data-validating");
+    if (validationError) {
+      fileInput.value = "";
+      requestFormMessage.textContent = validationError;
+      updateReviewRequestButton();
+      return;
+    }
+    requirementFiles.set(key, file);
+    fileInput.toggleAttribute("data-file-selected", true);
+    fileInput.nextElementSibling.classList.add("has-file");
+    fileInput.nextElementSibling.querySelector(".request-required-file-name").textContent = file.name;
+    requestFormMessage.textContent = "";
+    updateReviewRequestButton();
+    return;
+  }
+
+  const confirmation = event.target.closest(".request-requirement-confirm");
+  if (!confirmation) return;
+  if (confirmation.checked) confirmedRequirementRows.add(confirmation.dataset.requestRowId);
+  else confirmedRequirementRows.delete(confirmation.dataset.requestRowId);
+});
+
+requestRequirementsList.addEventListener("dragover", event => {
+  const dropzone = event.target.closest(".request-requirement-dropzone");
+  if (!dropzone) return;
+  event.preventDefault();
+  dropzone.classList.add("drag-active");
+});
+
+requestRequirementsList.addEventListener("dragleave", event => {
+  const dropzone = event.target.closest(".request-requirement-dropzone");
+  if (!dropzone || dropzone.contains(event.relatedTarget)) return;
+  dropzone.classList.remove("drag-active");
+});
+
+requestRequirementsList.addEventListener("drop", event => {
+  const dropzone = event.target.closest(".request-requirement-dropzone");
+  if (!dropzone) return;
+  event.preventDefault();
+  dropzone.classList.remove("drag-active");
+  const file = event.dataTransfer?.files?.[0];
+  const fileInput = document.getElementById(dropzone.dataset.inputId);
+  if (!file || !fileInput) return;
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  fileInput.files = transfer.files;
+  fileInput.dispatchEvent(new Event("change", { bubbles: true }));
 });
 
 document.querySelectorAll(".doc-request-btn").forEach(button => {
@@ -477,6 +706,18 @@ document.querySelectorAll(".doc-request-btn").forEach(button => {
 documentRequestForm.addEventListener("submit", event => {
   event.preventDefault();
   if (activeStep !== 4) return;
+  if (!requirementsAreConfirmed() || !requiredFilesAreUploaded()) {
+    showRequestStep(3);
+    requestFormMessage.textContent = !requirementsAreConfirmed()
+      ? "Confirm that you have reviewed the listed requirements for every selected document."
+      : "Attach a file for every listed requirement before continuing.";
+    return;
+  }
+  if (hasExcessCopies()) {
+    showRequestStep(1);
+    requestFormMessage.textContent = `You can request a maximum of ${maxCopiesPerDocument} copies per document.`;
+    return;
+  }
   const items = selectedDocuments();
   const { purpose, paymentMethod, files } = fillReview(items);
   const tracking = trackingNumber();
@@ -514,6 +755,7 @@ documentRequestForm.addEventListener("submit", event => {
   documentRequestForm.hidden = true;
   requestSuccess.hidden = false;
   showRequestStep(5);
+  renderTrackingQrCode(request);
 });
 
 document.getElementById("requestAgainBtn")?.addEventListener("click", () => startRequest());
